@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+
+    <title></title>
+</head>
+<body onload="defaultTab(event, 'temp-tab')">
+    <div data-role="page" id="background">
+        <!-------------------------------------------------------------  TEMP TAB  ------------------------------------------------------------>
+        <div id="temp-tab" class="tabcontent">
+            <div data-role="panel" id="mypanel" data-position="right" data-display="overlay">
+                <a>Settings</a>
+                <p>Press the button to download a report to your SD card.</p>
+                <p>You will be alerted if your temperature is too high or too low.</p>
+                <button id="reprort-btn" onclick="report()">Generate Report</button>
+            </div>
+
+            <a id="panel-btn" href="#mypanel" class="ui-nodisc-icon ui-btn ui-corner-all ui-icon-bars ui-btn-icon-notext" rel="external" style="float: right; margin-right: 3%; margin-top: -2%; margin-left: -3%;" >Menu</a>
+
+            <h1 class="title">Temperature Monitor</h1>
+
+            <!--<button id="addDataPoint">Button</button>-->
+            <div id="temp-graph" class="graph-container"></div>
+
+
+            <div id="temp-container">
+                <p class="title subtitle">Current Temperature</p>
+                <div class="current-temp-container">
+                    <p id="current-temp" class="title">25˚C</p> <!--get temp value later-->
+                </div>
+            </div>
+        </div>
+
+        <!-------------------------------------------------------------  SLEEP TAB  ------------------------------------------------------------>
+        <div id="sleep-tab" class="tabcontent">
+            <div data-role="panel" id="sleep-panel" data-position="right" data-display="overlay">
+                <a>Settings</a>
+                <p></p>
+            </div>
+
+            <a href="#sleep-panel" class="ui-nodisc-icon ui-btn ui-corner-all ui-icon-bars ui-btn-icon-notext" rel="external" style="float: right; margin-right: 3%; margin-top: -2%; margin-left: -3%;">Menu</a>
+
+            <h1 class="title">Sleep Monitor</h1>
+
+            <div id="sleep-graph" class="graph-container"></div>
+
+            <div class="sleep-stats-container">
+                <div class="sleep-stat">
+                    <p class="title subtitle">Duration</p>
+                    <p id="current-duration" class="title">0hr 0min</p>
+                </div>
+                <!--<div class="sleep-stat">
+                    <p class="title subtitle">Quality</p>
+                    <p id="current-quality" class="title">0%</p>
+                </div>-->
+            </div>
+
+        </div>
+
+        <!-------------------------------------------------------------  TAB BUTTONS  ------------------------------------------------------------>
+        <div class="tab-btn-container">
+            <button id="tab-btn" class="tablinks active" onclick="changeTab(event, 'temp-tab')">Temperature</button>
+            <button id="tab-btn" class="tablinks" onclick="changeTab(event, 'sleep-tab')">Sleep</button>
+        </div>
+
+    </div>
+
+    <!-------------------------------------------------------------  TEMP MODAL  ------------------------------------------------------------>
+    <div id="modalTemp" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Temperature Report</h2>
+            <div class="modal-container"><p class="modal-label"><b>Total Time: </b></p><p class="temp-report-value" id="tempReport-total-time"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Minimum Temperature: </b></p><p class="temp-report-value" id="tempReport-min-temp"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Maximum Temperature: </b></p><p class="temp-report-value" id="tempReport-max-temp"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Average Temperature: </b></p><p class="temp-report-value" id="tempReport-avg-temp"></p></div>
+            <button id="pdf-btn" class="report-btn">PDF</button><button id="excel-btn" class="report-btn">Excel</button>
+        </div>
+    </div>
+
+    <!-------------------------------------------------------------  SCRIPTS  ------------------------------------------------------------>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="scripts/platformOverrides.js"></script>
+    <script type="text/javascript" src="scripts/index.js"></script>
+    <script src="scripts/jquery-1.8.0.min.js"></script>
+    <script src="scripts/jquery.mobile-1.4.5.min.js"></script>
+    <script src="scripts/jspdf.min.js"></script>
+    <script src="scripts/bluetooth.js"></script>
+    <script src="scripts/media.js"></script>
+    <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+    <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+</body>
+</html>
