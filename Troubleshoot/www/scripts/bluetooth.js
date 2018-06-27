@@ -289,7 +289,7 @@ function readSuccessTemp(result) {
         if (currentTemp > 38 && !modalOpen) //38 for fever body temp. 27 used for testing
             alert("Time to cool down");
         else if (currentTemp < 15 && !modalOpen) //35 for body temp. 22 used for testing
-            alert("Time to warm up");
+            //alert("Time to warm up");
         tempArray.push(currentTemp);
         //alert(typeof currentTemp); //number
         $("#current-temp").text(currentTemp + "˚C");
@@ -303,6 +303,12 @@ var sleepPos = [0, 0, 0, 0, 0];
 var sleepCount = [0, 0, 0, 0, 0];
 var sleeping = 0;
 var sleepDuration = 0;
+var totalSleep = 0;
+var lastPos = 0;  //standing 0, back 1, front 2, right 3, left 4
+var posCtr = 0;
+var rightFlag = 0;
+var frontFlag = 0;
+var sleepHr, sleepMin;
 function readSuccessAccel(result) {
     if (result.status === "read") {
         var newAccel = bluetoothle.encodedStringToBytes(result.value);
@@ -313,7 +319,7 @@ function readSuccessAccel(result) {
         //alert("X: " + newAccelX + "\nY: " + newAccelY + "\nZ: " + newAccelZ);
 
         //shift array values and take average
-        for (var i = 5; i > 0; i--) {
+        for (var i = 4; i > 0; i--) {
             accelX[i] = accelX[i - 1];
             accelY[i] = accelY[i - 1];
             accelZ[i] = accelZ[i - 1];
@@ -327,63 +333,120 @@ function readSuccessAccel(result) {
             avgY = accelY.reduce((a, b) => a + b, 0) / accelY.length;
             avgZ = accelZ.reduce((a, b) => a + b, 0) / accelZ.length;
 
+            /*if (avgZ > 190)
+                frontFlag = 1;*/
+
+            //testing
+            for (var j = 0; j < 4; j++) {
+                //if (accelX[)
+                   // rightFlag = 1;
+                if (accelZ[j] > 200)
+                    frontFlag = 1;
+               // alert(accelX[j]);
+            }
+
             //Start sleep
             if (newAccelY > 20)
                 sleeping = 1;
             //Tally up positions
-            if (sleeping) {
-
+            if (sleeping) { 
+                //alert(sleeping);
+                totalSleep++;
+                //need to add check for if previous value was this, do this
                 
                 //alert(sleepDuration);
-                if (newAccelY < 20) { // STANDING
-                    //alert("standing");
-                    sleepCount[0]++;
-                    sleepDuration++;
-                    //sleepPos[0] = (sleepCount[0] / sleepDuration) * 100;
+                if (newAccelY < 20) { // STANDING (0)
+                    //sleepDuration++;
+                    lastPos = 0;
+                    sleeping = 0;
                 }
-                else if (newAccelZ < 20) { // BACK OR FRONT
-                    //alert("back or front");
-                    if (avgZ < 20) {
-                        //alert("back");
-                        sleepCount[1]++;
+                else if (newAccelZ < 20 || newAccelZ > 200) { // BACK OR FRONT
+                    rightFlag = 0;
+
+                    /*********** FRONT (2) ************/
+                    if (frontFlag) { //instead of average check exact values of last few ....?
                         sleepDuration++;
-                        //sleepPos[1] = (sleepCount[1] / sleepDuration)*100;
-                        //alert("Back: " + sleepPos[1]);
-                    }
-                    else {
-                        //alert("front");
+                        /*if (lastPos == 1 && posCtr > 10) { //if was back && was on that position for at least 10s
+                            sleepCount[1]++;
+                        }
+                        else {
+                            if (lastPos = 2)
+                                posCtr++;
+                            else
+                                posCtr = 0;*/
                         sleepCount[2]++;
+                        lastPos = 2;
+                        //}
+                    }
+                    /*********** BACK (1) ************/
+                    else {
                         sleepDuration++;
-                        //sleepPos[2] = (sleepCount[2] / sleepDuration)*100;
-                        //alert("Front: " + sleepPos[2]);
+                        /*if (lastPos == 2 && posCtr > 10) { //if was front && was on that position for at least 10s?
+                            sleepCount[2]++;
+                        }
+                        else {
+                            if (lastPos = 1)
+                                posCtr++;
+                            else
+                                posCtr = 0;*/
+                        sleepCount[1]++;
+                        lastPos = 1;
+                            //}
+
                     }
                 }
-                else if (newAccelX < 20) { // SIDE
-                    //alert("side");
-                    if (avgX < 20) {
-                        //right side
+                else if (newAccelX < 40 || newAccelX > 200) { // SIDE
+                    frontFlag = 0;
+
+                    /*********** RIGHT (3) ************/
+                    if (newAccelX > 200) {
+                        sleepDuration++;
+                        /*if (lastPos == 4 && posCtr > 10) { //if was left side
+                            sleepCount[4]++;
+                        }
+                        else {
+                            if (lastPos = 3)
+                                posCtr++;
+                            else
+                                posCtr = 0;*/
                         sleepCount[3]++;
-                        sleepDuration++;
-                        //sleepPos[3] = (sleepCount[3] / sleepDuration)*100;
+                        lastPos = 3;
+                        //}
+                            //rightFlag = 0;
                     }
+                    /*********** LEFT (4) ************/
                     else {
-                        //left side
-                        sleepCount[4]++;
                         sleepDuration++;
-                        //sleepPos[4] = (sleepCount[4] / sleepDuration)*100;
+                        /*if (lastPos == 3 && posCtr > 10) { //if was right side
+                            sleepCount[3]++;
+                        }
+                        else {
+                            if (lastPos = 4)
+                                posCtr++;
+                            else
+                                posCtr = 0;*/
+                        sleepCount[4]++;
+                        lastPos = 4;
+                        //}
+
+
                     }
 
+                }
+                else {
+                    //sleepCount[sleepPos]++;
                 }
                 sleepPos[0] = (sleepCount[0] / sleepDuration) * 100;
                 sleepPos[1] = (sleepCount[1] / sleepDuration) * 100;
                 sleepPos[2] = (sleepCount[2] / sleepDuration) * 100;
                 sleepPos[3] = (sleepCount[3] / sleepDuration) * 100;
                 sleepPos[4] = (sleepCount[4] / sleepDuration) * 100;
+                sleepHr = totalSleep / 3600;
+                sleepMin = (totalSleep / 60) % 60;
+                $("#current-duration").text(sleepHr.toFixed(0) + "hr " + sleepMin.toFixed(0) + "min");
                 updateSleep();
             }
         }
-        //alert(sleepPos[2]);
-        //sleepLine.render();
         
     }
 }
@@ -440,7 +503,7 @@ function report() {
             maxTemp = Math.max(...tempArray);
             $("#tempReport-max-temp").text(maxTemp + "\xB0C");
             avgTemp = tempArray.reduce((a, b) => a + b, 0) / tempArray.length;
-            avgTemp = avgTemp.toPrecision(2);
+            avgTemp = avgTemp.toFixed(0);
             $("#tempReport-avg-temp").text(avgTemp + "\xB0C");
 
             setTimeout(function () {
@@ -451,8 +514,32 @@ function report() {
     }
     //$("#mypanel").show();
 }
-function closeModal() {
-    var modal = document.getElementById('modalTemp');
+function sleepReport() {
+    var modal = document.getElementById('modalSleep');
+    if (modalOpen) {
+        modal.style.display = "none";
+        setTimeout(function () {
+            modalOpen = false;
+        }, 500);
+    }
+    else if (!modalOpen) {
+        modal.style.display = "block";
+        $("#sleepReport-duration").text(sleepHr.toFixed(0) + "hr " + sleepMin.toFixed(0) + "min");
+        $("#sleepReport-front").text(sleepPos[2].toFixed(0) + " %");
+        $("#sleepReport-back").text(sleepPos[1].toFixed(0) + " %");
+        $("#sleepReport-left").text(sleepPos[4].toFixed(0) + " %");
+        $("#sleepReport-right").text(sleepPos[3].toFixed(0) + " %");
+
+        setTimeout(function () {
+            modalOpen = true;
+        }, 500);
+    }
+}
+function closeModal(page) {
+    if(page === 'temp')
+        var modal = document.getElementById('modalTemp');
+    else if (page === 'sleep')
+        var modal = document.getElementById('modalSleep');
     modal.style.display = "none";
     modalOpen = false;
     //$("#mypanel").show();
@@ -515,8 +602,7 @@ function sleepLineGraph() {
         },
         legend: {
             //horizontalAlign: "right"
-            dockInsidePlotArea: true,
-            itemWidth: 60 //hardcoded
+            
         },
         data: [{
             type: "pie",
@@ -580,20 +666,24 @@ chart.render();
 
 /*************************************************  General  **************************************************/
 /***** Tabs*****/
+var tabPage = 'temp';
 function changeTab(evt, tabName) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
         tabcontent[i].style.display = "none";
     }
-    //if (tabName === "sleep-tab")
-        //sleepLineGraph();
     tablinks = document.getElementsByClassName("tablinks");
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
+
+    if (tabName === "sleep-tab")
+        tabPage = 'sleep';
+    else if (tabName === "temp-tab")
+        tabPage = 'temp';
 }
 
 function defaultTab(evt, tabName) {

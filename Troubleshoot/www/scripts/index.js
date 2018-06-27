@@ -18,7 +18,9 @@
         $("#home-btn-music").click(toMusic);
         $("#footer-msg").click(bluetoothSeq);
         $("#pdf-btn").click(btnFcn);
+        $("#sleep-pdf-btn").click(btnFcn);
         $("#excel-btn").click(excelMaker);
+        $("#sleep-excel-btn").click(excelMaker);
         $("#panel-btn").click(openPanel);
        // $("#report-btn").click(report);
 

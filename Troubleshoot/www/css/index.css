@@ -166,6 +166,10 @@
     padding-top: 6%;
 }
 
+.report-btn {
+    padding: 15px 25px;
+}
+
 /* TABS */
 .tab-btn-container {
     overflow: hidden;

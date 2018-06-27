@@ -1,13 +1,23 @@
-﻿/****************************** FILE STORAGE ******************************/
-var pdfOutput, csvOutput;
+﻿var pdfOutput, csvOutput, sleepPDF, sleepCSV;
+/****************************** PDF ******************************/
 function btnFcn() {
+    alert("Downloading...");
     var pdf = new jsPDF();
-    source = $('#modalTemp')[0];
+    if (tabPage === 'temp')
+        source = $('#modalTemp')[0];
+    else if (tabPage === 'sleep')
+        source = $('#modalSleep')[0];
     specialElementHandlers = {
         '#pdf-btn': function (element, renderer) {
             return true
         },
         '#excel-btn': function (element, renderer) {
+            return true
+        }, 
+        '#sleep-pdf-btn': function (element, renderer) { 
+            return true
+        },
+        '#sleep-excel-btn': function (element, renderer) {
             return true
         }
     };
@@ -31,7 +41,11 @@ function btnFcn() {
 
         },
         margins);
-    pdfOutput = pdf.output("blob");
+    if (tabPage === 'temp')
+        pdfOutput = pdf.output("blob");
+    else if (tabPage === 'sleep')
+        sleepPDF = pdf.output("blob");
+
     //Request storage
     window.requestFileSystem(PERSISTENT, 0, createDirectoryFS, failureInGettingFile);
 }
@@ -53,7 +67,11 @@ function localStorageGetFS(dirEntry) {
     if (mm < 10) { mm = "0" + mm; }
     if (hr < 10) { hr = "0" + hr; }
     if (min < 10) { min = "0" + min; }
-    var name = "TEMP_" + dd + mm + yyyy +  "_" + hr + min;
+
+    if (tabPage === 'temp')
+        var name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
+    else if (tabPage === 'sleep')
+        var name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
 
     dirEntry.getFile(name + ".pdf", { create: true, exclusive: false }, function (fileEntry) {
         writeFile(fileEntry, null);
@@ -64,20 +82,26 @@ function writeFile(fileEntry, dataObj) {
     fileEntry.createWriter(function (fileWriter) {
 
         fileWriter.onwriteend = function () {
-            alert("Report Downloaded");
+            alert("Report Downloaded!");
         };
         fileWriter.onerror = function (e) {
         };
         if (!dataObj) {
-            dataObj = new Blob([pdfOutput], { type: 'application/pdf' });
+            if (tabPage === 'temp')
+                dataObj = new Blob([pdfOutput], { type: 'application/pdf' });
+            else if (tabPage === 'sleep')
+                dataObj = new Blob([sleepPDF], { type: 'application/pdf' });
         }
 
         fileWriter.write(dataObj);
     });
 }
 
+/****************************** EXCEL ******************************/
 function excelMaker() {
+    alert("Downloading...");
     csvOutput = "Total Time," + tempTime + "\n" + "Minimum Temperature," + minTemp + "\n" + "Maximum Temperature," + maxTemp + "\n" + "Average Temperature," + avgTemp + "\n";
+    sleepCSV = "Sleep Duration," + sleepHr.toFixed(0) + "hr " + sleepMin.toFixed(0) + "min\n" + "Front," + sleepPos[2].toFixed(0) + "%\n" + "Back," + sleepPos[1].toFixed(0) + "%\n" + "Left," + sleepPos[4].toFixed(0) + "%\n" + "Right," + sleepPos[3].toFixed(0) + "%";
     window.requestFileSystem(PERSISTENT, 0, createDir, failureInGettingFile);
 }
 function createDir(fileSystem) {
@@ -97,7 +121,11 @@ function createFile(dirEntry) {
     if (mm < 10) { mm = "0" + mm; }
     if (hr < 10) { hr = "0" + hr; }
     if (min < 10) { min = "0" + min; }
-    var name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
+
+    if (tabPage === 'temp')
+        var name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
+    else if (tabPage === 'sleep')
+        var name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
 
     dirEntry.getFile(name + ".csv", { create: true, exclusive: false }, function (fileEntry) {
         writeCSV(fileEntry, null);
@@ -107,12 +135,15 @@ function writeCSV(fileEntry, dataObj) {
     fileEntry.createWriter(function (fileWriter) {
 
         fileWriter.onwriteend = function () {
-            alert("Report Downloaded");
+            alert("Report Downloaded!");
         };
         fileWriter.onerror = function (e) {
         };
         if (!dataObj) {
-            dataObj = new Blob([csvOutput], { type: 'text/plain' });
+            if (tabPage === 'temp')
+                dataObj = new Blob([csvOutput], { type: 'text/plain' });
+            else if (tabPage === 'sleep')
+                dataObj = new Blob([sleepCSV], { type: 'text/plain' });
         }
 
         fileWriter.write(dataObj);

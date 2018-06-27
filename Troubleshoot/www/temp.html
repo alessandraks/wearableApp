@@ -42,6 +42,7 @@
             <div data-role="panel" id="sleep-panel" data-position="right" data-display="overlay">
                 <a>Settings</a>
                 <p></p>
+                <button id="reprort-btn" onclick="sleepReport()">Generate Report</button>
             </div>
 
             <a href="#sleep-panel" class="ui-nodisc-icon ui-btn ui-corner-all ui-icon-bars ui-btn-icon-notext" rel="external" style="float: right; margin-right: 3%; margin-top: -2%; margin-left: -3%;">Menu</a>
@@ -74,13 +75,27 @@
     <!-------------------------------------------------------------  TEMP MODAL  ------------------------------------------------------------>
     <div id="modalTemp" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
+            <span class="close" onclick="closeModal('temp')">&times;</span>
             <h2>Temperature Report</h2>
             <div class="modal-container"><p class="modal-label"><b>Total Time: </b></p><p class="temp-report-value" id="tempReport-total-time"></p></div>
             <div class="modal-container"><p class="modal-label"><b>Minimum Temperature: </b></p><p class="temp-report-value" id="tempReport-min-temp"></p></div>
             <div class="modal-container"><p class="modal-label"><b>Maximum Temperature: </b></p><p class="temp-report-value" id="tempReport-max-temp"></p></div>
             <div class="modal-container"><p class="modal-label"><b>Average Temperature: </b></p><p class="temp-report-value" id="tempReport-avg-temp"></p></div>
             <button id="pdf-btn" class="report-btn">PDF</button><button id="excel-btn" class="report-btn">Excel</button>
+        </div>
+    </div>
+
+    <!-------------------------------------------------------------  SLEEP MODAL  ------------------------------------------------------------>
+    <div id="modalSleep" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('sleep')">&times;</span>
+            <h2>Sleep Report</h2>
+            <div class="modal-container"><p class="modal-label"><b>Sleep Duration: </b></p><p class="temp-report-value" id="sleepReport-duration"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Front: </b></p><p class="temp-report-value" id="sleepReport-front"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Back: </b></p><p class="temp-report-value" id="sleepReport-back"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Left: </b></p><p class="temp-report-value" id="sleepReport-left"></p></div>
+            <div class="modal-container"><p class="modal-label"><b>Right: </b></p><p class="temp-report-value" id="sleepReport-right"></p></div>
+            <button id="sleep-pdf-btn" class="report-btn">PDF</button><button id="sleep-excel-btn" class="report-btn">Excel</button>
         </div>
     </div>
 
