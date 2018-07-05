@@ -7,17 +7,14 @@ var charAccel = "2A58";
 
 /******  MAIN MENU   ******/
 function toTemp() {
+    navigator.vibrate(2000);
     window.location.href = "temp.html";
+    
    // tempGraph();
 }
 function toMusic() {
+    navigator.vibrate(2000);
     window.location.href = "music.html";
-}
-
-//vibration
-function vibrate() {
-    var time = 3000;
-    navigator.vibrate(time);
 }
 
 /******  TEMP PAGE   ******/
@@ -292,10 +289,14 @@ function readSuccessTemp(result) {
             currentTemp = newTemp; //update temp if not zero
         }
         /*** check too hot / too cold ***/
-        if (currentTemp > 38 && !modalOpen) //38 for fever body temp. 27 used for testing
+        if (currentTemp > 38 && !modalOpen) { //38 for fever body temp. 27 used for testing
+            navigator.notification.beep(1);
             alert("Time to cool down");
-        else if (currentTemp < 15 && !modalOpen) //35 for body temp. 22 used for testing
-            //alert("Time to warm up");
+        }
+        else if (currentTemp < 15 && !modalOpen) { //35 for body temp. 22 used for testing
+            navigator.notification.beep(1);
+            alert("Time to warm up");
+        }
         tempArray.push(currentTemp);
         //alert(typeof currentTemp); //number
         $("#current-temp").text(currentTemp + "˚C");
