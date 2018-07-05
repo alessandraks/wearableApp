@@ -68,10 +68,11 @@ function localStorageGetFS(dirEntry) {
     if (hr < 10) { hr = "0" + hr; }
     if (min < 10) { min = "0" + min; }
 
+    var name;
     if (tabPage === 'temp')
-        var name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
+        name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
     else if (tabPage === 'sleep')
-        var name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
+        name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
 
     dirEntry.getFile(name + ".pdf", { create: true, exclusive: false }, function (fileEntry) {
         writeFile(fileEntry, null);
@@ -122,10 +123,11 @@ function createFile(dirEntry) {
     if (hr < 10) { hr = "0" + hr; }
     if (min < 10) { min = "0" + min; }
 
+    var name;
     if (tabPage === 'temp')
-        var name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
+        name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
     else if (tabPage === 'sleep')
-        var name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
+        name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
 
     dirEntry.getFile(name + ".csv", { create: true, exclusive: false }, function (fileEntry) {
         writeCSV(fileEntry, null);

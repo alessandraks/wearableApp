@@ -44,7 +44,7 @@ function tempGraph() {
             cursor: "pointer",
             verticalAlign: "bottom",
             horizontalAlign: "left",
-            dockInsidePlotArea: true,
+            dockInsidePlotArea: true
         },
         data: [
             /*{
@@ -306,9 +306,14 @@ var sleepDuration = 0;
 var totalSleep = 0;
 var lastPos = 0;  //standing 0, back 1, front 2, right 3, left 4
 var posCtr = 0;
-var rightFlag = 0;
+//var posFlags = [0, 0, 0, 0, 0]; //back 1, front 2, right 3, left 4
+var toFront = 0;
+var toLeft = 0;
 var frontFlag = 0;
+var rightFlag = 0;
+var posChange = 0;
 var sleepHr, sleepMin;
+var rssiFront, rssiCurr;
 function readSuccessAccel(result) {
     if (result.status === "read") {
         var newAccel = bluetoothle.encodedStringToBytes(result.value);
@@ -318,8 +323,10 @@ function readSuccessAccel(result) {
         var newAccelZ = String(newAccel).substr(String(newAccel).lastIndexOf(',') + 1);
         //alert("X: " + newAccelX + "\nY: " + newAccelY + "\nZ: " + newAccelZ);
 
+        //compare < or > . if 4/5 values are >, and on back/front, turning to left. if ... . 
+
         //shift array values and take average
-        for (var i = 4; i > 0; i--) {
+        for (var i = 5; i > 0; i--) {
             accelX[i] = accelX[i - 1];
             accelY[i] = accelY[i - 1];
             accelZ[i] = accelZ[i - 1];
@@ -328,43 +335,94 @@ function readSuccessAccel(result) {
         accelY[0] = Number(newAccelY); 
         accelZ[0] = Number(newAccelZ); 
         
-        if (tempTime > 4) { //array full of new values
-            avgX = accelX.reduce((a, b) => a + b, 0) / accelX.length;
+        if (tempTime > 2) { //array full of new values
+            /*avgX = accelX.reduce((a, b) => a + b, 0) / accelX.length;
             avgY = accelY.reduce((a, b) => a + b, 0) / accelY.length;
-            avgZ = accelZ.reduce((a, b) => a + b, 0) / accelZ.length;
+            avgZ = accelZ.reduce((a, b) => a + b, 0) / accelZ.length;*/
 
-            /*if (avgZ > 190)
+            /*if (avgZ > 190) 
                 frontFlag = 1;*/
 
+            //notes: need to check if changing position, then perform checks
+
             //testing
-            for (var j = 0; j < 4; j++) {
-                //if (accelX[)
-                   // rightFlag = 1;
+           /* for (var j = 4; j > 0; j--) {
                 if (accelZ[j] > 200)
                     frontFlag = 1;
-               // alert(accelX[j]);
+                else if (accelX[j] > 200)
+                    rightFlag = 1;
+            }*/
+
+            if (lastPos === 1 || lastPos === 2) { //changing position from back/front to left/right
+                for (var j = 5; j > 0; j--) { //check last 5 values and check if increasing or decreasing
+                    if (Math.abs(accelX[3] - accelX[j - 1]) > 20 && Math.abs(accelX[3] - accelX[j - 1]) < 200) { //don't count the edge values
+                        if (accelX[0] > accelX[j]) { //increasing from back/front to left
+                            toLeft++;
+                        }
+                        else { //decreasing from back/front to right
+                            toLeft--;
+                        }
+                        posChange = 1;
+                    }
+                }
+                if (posChange) {
+                    //alert(toLeft);
+                    if (toLeft > 0) { //left
+                        rightFlag = 0;
+                    }
+                    else { //right
+                        rightFlag = 1;
+                    }
+                    toLeft = 0;
+                    posChange = 0;
+                }
             }
+           /* else if (lastPos === 3 || lastPos === 4) { //changing position from left/right to back/front
+                for (var j = 5; j > 0; j--) { //check last 5 values and check if increasing or decreasing
+                    if (Math.abs(accelZ[3] - accelZ[j - 1]) > 20 && Math.abs(accelZ[3] - accelZ[j - 1]) < 200) { //don't count the edge values
+                        if (accelZ[0] > accelZ[j]) { //increasing from back/front to left
+                            toFront++;
+                        }
+                        else { //decreasing from back/front to right
+                            toFront--;
+                        }
+                        posChange = 1;
+                    }
+                }
+                if (posChange) {
+                    if (toFront > 0) { //front
+                        frontFlag = 1;
+                    }
+                    else { //back
+                        frontFlag = 0;
+                    }
+                    toFront = 0;
+                    posChange = 0;
+                }
+            }*/
 
             //Start sleep
             if (newAccelY > 20)
                 sleeping = 1;
             //Tally up positions
             if (sleeping) { 
-                //alert(sleeping);
-                totalSleep++;
-                //need to add check for if previous value was this, do this
                 
-                //alert(sleepDuration);
+                if (rssiInitial) { //read RSSI value for front
+                    getRSSI();
+                }
+                getRSSI();
+
+                totalSleep++;
+                
                 if (newAccelY < 20) { // STANDING (0)
                     //sleepDuration++;
                     lastPos = 0;
                     sleeping = 0;
                 }
-                else if (newAccelZ < 20 || newAccelZ > 200) { // BACK OR FRONT
+                else if ((newAccelZ < 50 || newAccelZ > 205) && !rssiInitial) { // BACK OR FRONT
                     rightFlag = 0;
-
                     /*********** FRONT (2) ************/
-                    if (frontFlag) { //instead of average check exact values of last few ....?
+                    if (Math.abs(rssiCurr - rssiFront) < 10) { //frontFlag
                         sleepDuration++;
                         /*if (lastPos == 1 && posCtr > 10) { //if was back && was on that position for at least 10s
                             sleepCount[1]++;
@@ -395,11 +453,11 @@ function readSuccessAccel(result) {
 
                     }
                 }
-                else if (newAccelX < 40 || newAccelX > 200) { // SIDE
+                else if (newAccelX < 50 || newAccelX > 205) { // SIDE
                     frontFlag = 0;
-
                     /*********** RIGHT (3) ************/
-                    if (newAccelX > 200) {
+                    if (rightFlag) { //rightFlag
+                        //posFlags[3] = 1;
                         sleepDuration++;
                         /*if (lastPos == 4 && posCtr > 10) { //if was left side
                             sleepCount[4]++;
@@ -416,6 +474,7 @@ function readSuccessAccel(result) {
                     }
                     /*********** LEFT (4) ************/
                     else {
+                        //posFlags[4] = 1;
                         sleepDuration++;
                         /*if (lastPos == 3 && posCtr > 10) { //if was right side
                             sleepCount[3]++;
@@ -536,10 +595,11 @@ function sleepReport() {
     }
 }
 function closeModal(page) {
+    var modal;
     if(page === 'temp')
-        var modal = document.getElementById('modalTemp');
+        modal = document.getElementById('modalTemp');
     else if (page === 'sleep')
-        var modal = document.getElementById('modalSleep');
+        modal = document.getElementById('modalSleep');
     modal.style.display = "none";
     modalOpen = false;
     //$("#mypanel").show();
@@ -693,3 +753,48 @@ function defaultTab(evt, tabName) {
     sleepLineGraph();
 }
 
+
+
+/*RSSI testing*/
+function getRSSI() {
+    bluetoothle.rssi(rssiSuccess, rssiError, { address: address });
+}
+
+var rssiCtr = 0;
+var rssiInitial = 1;
+var rssiArray = [0,0,0];
+function rssiSuccess(result) {
+    if (result.status === "rssi") {
+        /*rssivals = rssivals + ", " + String(result.rssi);
+        rssictr++;
+        if (rssictr === 120) {
+            console.log("rssi values" + rssivals);
+            
+        }*/
+        if (rssiInitial) {
+            rssiFront = Number(String(result.rssi)); //should get avg
+            rssiInitial = 0;
+        }
+        else {
+            for (var k = 2; k > 0; k--) {
+                rssiArray[k] = rssiArray[k - 1];
+                rssiCtr++;
+            }
+            rssiArray[0] = Number(String(result.rssi));
+            if (rssiCtr > 5) { //array is full of all new values
+                rssiCurr = rssiArray.reduce((a, b) => a + b, 0) / rssiArray.length; //average
+            }
+            else if (rssiCtr === 4) { //last two indices in array contain new values
+                rssiCurr = rssiArray.reduce((a, b) => a + b, -1) / (rssiArray.length - 1); //average
+            }
+            else { //array only has one new value at index 0
+                rssiCurr = rssiArray[0];
+            }
+        }
+    }
+    else
+        console.log("rssi status not read correctly");
+}
+function rssiError() {
+    console.log("rssi error");
+}

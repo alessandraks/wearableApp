@@ -22,6 +22,7 @@
         $("#excel-btn").click(excelMaker);
         $("#sleep-excel-btn").click(excelMaker);
         $("#panel-btn").click(openPanel);
+        
        // $("#report-btn").click(report);
 
         var path = window.location.pathname;
@@ -31,12 +32,12 @@
             window.setInterval(function () {
                 readTemp();
                 tempTime++;
-                readAccel();
             }, 1000); //every second
         }
         window.setInterval(function () {
-            readButton();
-        }, 100); //every 0.1 seconds
+            //getRSSI();
+            readAccel();
+        }, 500); //every 0.5 seconds
     };
 
     function onPause() {
