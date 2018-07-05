@@ -14,6 +14,12 @@ function toMusic() {
     window.location.href = "music.html";
 }
 
+//vibration
+function vibrate() {
+    var time = 3000;
+    navigator.vibrate(time);
+}
+
 /******  TEMP PAGE   ******/
 var chart, sleepLine;
 var currentTemp = 25;
