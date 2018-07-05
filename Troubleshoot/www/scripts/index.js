@@ -23,6 +23,11 @@
         $("#sleep-excel-btn").click(excelMaker);
         $("#panel-btn").click(openPanel);
         
+        //vibration
+        document.getElementById("home-btn-music").addEventListener('click', vibrate);
+        document.getElementById("home-btn-temp").addEventListener('click', vibrate);
+
+        
        // $("#report-btn").click(report);
 
         var path = window.location.pathname;
