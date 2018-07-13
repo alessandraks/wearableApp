@@ -1,5 +1,5 @@
 ﻿var position = 0;
-var address = "F4:AE:03:E8:D6:35";//"C3:10:D9:17:33:61"; //Address of old Nano device
+var address = "C3:10:D9:17:33:61";//C3:10:D9:17:33:61 -- Address of old Nano device //F4:AE:03:E8:D6:35 -- Address of broken
 var serviceUuid = "1815";//"713d0000-503e-4c75-ba94-3148f18d941e"; //Client - Generic Acess
 var characteristics = "2A57"; //Generic Access - Device Name
 var characteristicTemp = "2A59";
@@ -360,7 +360,7 @@ function readSuccessAccel(result) {
                     rightFlag = 1;
             }*/
 
-            if (lastPos === 1 || lastPos === 2) { //changing position from back/front to left/right
+            /*if (lastPos === 1 || lastPos === 2) { //changing position from back/front to left/right
                 for (var j = 5; j > 0; j--) { //check last 5 values and check if increasing or decreasing
                     if (Math.abs(accelX[3] - accelX[j - 1]) > 20 && Math.abs(accelX[3] - accelX[j - 1]) < 200) { //don't count the edge values
                         if (accelX[0] > accelX[j]) { //increasing from back/front to left
@@ -383,7 +383,7 @@ function readSuccessAccel(result) {
                     toLeft = 0;
                     posChange = 0;
                 }
-            }
+            }*/
            /* else if (lastPos === 3 || lastPos === 4) { //changing position from left/right to back/front
                 for (var j = 5; j > 0; j--) { //check last 5 values and check if increasing or decreasing
                     if (Math.abs(accelZ[3] - accelZ[j - 1]) > 20 && Math.abs(accelZ[3] - accelZ[j - 1]) < 200) { //don't count the edge values
@@ -409,95 +409,41 @@ function readSuccessAccel(result) {
             }*/
 
             //Start sleep
-            if (newAccelY > 20)
+            if (newAccelY < 70) //batt-test: newAccelY > 20
                 sleeping = 1;
             //Tally up positions
             if (sleeping) { 
                 
-                if (rssiInitial) { //read RSSI value for front
+                /*batt-test:  if (rssiInitial) { //read RSSI value for front
                     getRSSI();
                 }
-                getRSSI();
+                getRSSI();*/
 
                 totalSleep++;
                 
-                if (newAccelY < 20) { // STANDING (0)
-                    //sleepDuration++;
+                if (newAccelY < 20) { // STANDING (0) //batt-test: newAccelY < 20
                     lastPos = 0;
                     sleeping = 0;
                 }
-                else if ((newAccelZ < 50 || newAccelZ > 205) && !rssiInitial) { // BACK OR FRONT
-                    rightFlag = 0;
-                    /*********** FRONT (2) ************/
-                    if (Math.abs(rssiCurr - rssiFront) < 10) { //frontFlag
-                        sleepDuration++;
-                        /*if (lastPos == 1 && posCtr > 10) { //if was back && was on that position for at least 10s
-                            sleepCount[1]++;
-                        }
-                        else {
-                            if (lastPos = 2)
-                                posCtr++;
-                            else
-                                posCtr = 0;*/
-                        sleepCount[2]++;
-                        lastPos = 2;
-                        //}
-                    }
-                    /*********** BACK (1) ************/
-                    else {
-                        sleepDuration++;
-                        /*if (lastPos == 2 && posCtr > 10) { //if was front && was on that position for at least 10s?
-                            sleepCount[2]++;
-                        }
-                        else {
-                            if (lastPos = 1)
-                                posCtr++;
-                            else
-                                posCtr = 0;*/
-                        sleepCount[1]++;
-                        lastPos = 1;
-                            //}
-
-                    }
+                else if (newAccelZ > 144 && newAccelZ < 170) { //front
+                    sleepDuration++;
+                    sleepCount[2]++;
+                    lastPos = 2;
                 }
-                else if (newAccelX < 50 || newAccelX > 205) { // SIDE
-                    frontFlag = 0;
-                    /*********** RIGHT (3) ************/
-                    if (rightFlag) { //rightFlag
-                        //posFlags[3] = 1;
-                        sleepDuration++;
-                        /*if (lastPos == 4 && posCtr > 10) { //if was left side
-                            sleepCount[4]++;
-                        }
-                        else {
-                            if (lastPos = 3)
-                                posCtr++;
-                            else
-                                posCtr = 0;*/
-                        sleepCount[3]++;
-                        lastPos = 3;
-                        //}
-                            //rightFlag = 0;
-                    }
-                    /*********** LEFT (4) ************/
-                    else {
-                        //posFlags[4] = 1;
-                        sleepDuration++;
-                        /*if (lastPos == 3 && posCtr > 10) { //if was right side
-                            sleepCount[3]++;
-                        }
-                        else {
-                            if (lastPos = 4)
-                                posCtr++;
-                            else
-                                posCtr = 0;*/
-                        sleepCount[4]++;
-                        lastPos = 4;
-                        //}
-
-
-                    }
-
+                else if (newAccelZ > 176 && newAccelZ < 223) { //back
+                    sleepDuration++;
+                    sleepCount[1]++;
+                    lastPos = 1;
+                }
+                else if (newAccelX > 128 && newAccelX < 175) { //left
+                    sleepDuration++;
+                    sleepCount[4]++;
+                    lastPos = 4;
+                }
+                else if (newAccelX > 176 && newAccelX < 208) { //right
+                    sleepDuration++;
+                    sleepCount[3]++;
+                    lastPos = 3;
                 }
                 else {
                     //sleepCount[sleepPos]++;
