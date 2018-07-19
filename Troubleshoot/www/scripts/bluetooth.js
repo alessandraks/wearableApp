@@ -1,4 +1,4 @@
-﻿var position = 0;
+var position = 0;
 var address = "C3:10:D9:17:33:61";//C3:10:D9:17:33:61 -- Address of old Nano device //F4:AE:03:E8:D6:35 -- Address of broken
 var serviceUuid = "1815";//"713d0000-503e-4c75-ba94-3148f18d941e"; //Client - Generic Acess
 var characteristics = "2A57"; //Generic Access - Device Name
@@ -489,6 +489,9 @@ function readSuccess(result) {
 function openPanel() {
     $("#mypanel").show();
 }
+function openSleepPanel(){
+    $("#sleep-panel").show();
+}
 function report() {
     //Close Panel
     $("#mypanel").hide();
@@ -527,6 +530,7 @@ function report() {
     //$("#mypanel").show();
 }
 function sleepReport() {
+    $("#sleep-panel").hide();
     var modal = document.getElementById('modalSleep');
     if (modalOpen) {
         modal.style.display = "none";
