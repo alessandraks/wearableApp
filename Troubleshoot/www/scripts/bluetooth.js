@@ -494,6 +494,7 @@ function openSleepPanel(){
 }
 function report() {
     //Close Panel
+    // document.getElementById("mypanel").style.display = "none";
     $("#mypanel").hide();
 
     var path = window.location.pathname;
@@ -527,7 +528,6 @@ function report() {
             }, 500);  
         }
     }
-    //$("#mypanel").show();
 }
 function sleepReport() {
     $("#sleep-panel").hide();
@@ -559,7 +559,10 @@ function closeModal(page) {
         modal = document.getElementById('modalSleep');
     modal.style.display = "none";
     modalOpen = false;
-    //$("#mypanel").show();
+    if(page === 'temp')
+        openPanel();
+    else if (page === 'sleep')
+        openSleepPanel();
 }
 
 function bluetoothSeq() {
