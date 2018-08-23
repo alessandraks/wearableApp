@@ -14,20 +14,30 @@
         bluetooth();
         connect();
 
-        $("#home-btn-temp").click(toTemp);
-        $("#home-btn-music").click(toMusic);
-        $("#footer-msg").click(bluetoothSeq);
-        $("#pdf-btn").click(btnFcn);
-        $("#sleep-pdf-btn").click(btnFcn);
-        $("#excel-btn").click(excelMaker);
-        $("#sleep-excel-btn").click(excelMaker);
-        $("#panel-btn").click(openPanel);
-        
-       // $("#report-btn").click(report);
-
         var path = window.location.pathname;
         var page = path.split("/").pop();
 
+        if(page === "index.html")
+            toHome();
+
+        $("#home-btn-temp").click(toTemp);
+        $("#home-btn-music").click(toMusic);
+        $("#home-btn-dyn").click(toDyn);
+        //$("#home-btn").click(toHome);
+        $("#footer-msg").click(bluetoothSeq);
+        $("#pdf-btn").click(btnFcn);
+        $("#sleep-pdf-btn").click(btnFcn);
+        $("#dyn-pdf-btn").click(btnFcn);
+        $("#excel-btn").click(excelMaker);
+        $("#sleep-excel-btn").click(excelMaker);
+        $("#dyn-excel-btn").click(excelMaker);
+        $("#panel-btn").click(openPanel);
+        $("#sleep-panel-btn").click(openPanel);
+        $("#dyn-panel-btn").click(openPanel);
+        $("#posture-notif").click(closeNotif);
+        
+       // $("#report-btn").click(report);
+        
         if (page === "temp.html") {
             window.setInterval(function () {
                 readTemp();
@@ -37,7 +47,7 @@
         window.setInterval(function () {
             //getRSSI();
             readAccel();
-        }, 500); //every 0.5 seconds
+        }, 200); //every 0.5 seconds
     };
 
     function onPause() {

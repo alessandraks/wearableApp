@@ -1,4 +1,13 @@
-﻿var pdfOutput, csvOutput, sleepPDF, sleepCSV;
+﻿/*
+
+THIS FILE DEALS WITH ALL THINGS STORAGE AND MEDIA.
+-->STORING FILES TO THE PHONE (PDF and CSV)
+        Android: Internal Storage - Reports
+-->ACCESSING MUSIC FILES FROM PHONE
+
+*/
+
+var pdfOutput, csvOutput, sleepPDF, sleepCSV, dynPDF, dynCSV;
 /****************************** PDF ******************************/
 function btnFcn() {
     alert("Downloading...");
@@ -7,6 +16,9 @@ function btnFcn() {
         source = $('#modalTemp')[0];
     else if (tabPage === 'sleep')
         source = $('#modalSleep')[0];
+    else if (tabPage === 'dyn')
+        source = $('#modalDyn')[0];
+
     specialElementHandlers = {
         '#pdf-btn': function (element, renderer) {
             return true
@@ -18,6 +30,12 @@ function btnFcn() {
             return true
         },
         '#sleep-excel-btn': function (element, renderer) {
+            return true
+        },
+        '#dyn-pdf-btn': function (element, renderer) {
+            return true
+        },
+        '#dyn-excel-btn': function (element, renderer) {
             return true
         }
     };
@@ -45,6 +63,8 @@ function btnFcn() {
         pdfOutput = pdf.output("blob");
     else if (tabPage === 'sleep')
         sleepPDF = pdf.output("blob");
+    else if (tabPage === 'dyn')
+        dynPDF = pdf.output("blob");
 
     //Request storage
     window.requestFileSystem(PERSISTENT, 0, createDirectoryFS, failureInGettingFile);
@@ -73,6 +93,8 @@ function localStorageGetFS(dirEntry) {
         name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
     else if (tabPage === 'sleep')
         name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
+    else if (tabPage === 'dyn')
+        name = "DYN_" + dd + mm + yyyy + "_" + hr + min;
 
     dirEntry.getFile(name + ".pdf", { create: true, exclusive: false }, function (fileEntry) {
         writeFile(fileEntry, null);
@@ -92,6 +114,8 @@ function writeFile(fileEntry, dataObj) {
                 dataObj = new Blob([pdfOutput], { type: 'application/pdf' });
             else if (tabPage === 'sleep')
                 dataObj = new Blob([sleepPDF], { type: 'application/pdf' });
+            else if (tabPage === 'dyn')
+                dataObj = new Blob([dynPDF], { type: 'application/pdf' });
         }
 
         fileWriter.write(dataObj);
@@ -102,7 +126,8 @@ function writeFile(fileEntry, dataObj) {
 function excelMaker() {
     alert("Downloading...");
     csvOutput = "Total Time," + tempTime + "\n" + "Minimum Temperature," + minTemp + "\n" + "Maximum Temperature," + maxTemp + "\n" + "Average Temperature," + avgTemp + "\n";
-    sleepCSV = "Sleep Duration," + sleepHr.toFixed(0) + "hr " + sleepMin.toFixed(0) + "min\n" + "Front," + sleepPos[2].toFixed(0) + "%\n" + "Back," + sleepPos[1].toFixed(0) + "%\n" + "Left," + sleepPos[4].toFixed(0) + "%\n" + "Right," + sleepPos[3].toFixed(0) + "%";
+    sleepCSV = "Sleep Duration," + sleepHr.toFixed(0) + "hr\n" + sleepMin.toFixed(0) + "min\n" + "Front," + sleepPos[2].toFixed(0) + "%\n" + "Back," + sleepPos[1].toFixed(0) + "%\n" + "Left," + sleepPos[4].toFixed(0) + "%\n" + "Right," + sleepPos[3].toFixed(0) + "%";
+    dynCSV = "Steps," + steps.toFixed(0) + "\n" + "Left Arm Movement," + finalLeftArm.toFixed(0) + "%\n" + "Right Arm Movement," + finalRightArm.toFixed(0) + "%";
     window.requestFileSystem(PERSISTENT, 0, createDir, failureInGettingFile);
 }
 function createDir(fileSystem) {
@@ -128,6 +153,8 @@ function createFile(dirEntry) {
         name = "TEMP_" + dd + mm + yyyy + "_" + hr + min;
     else if (tabPage === 'sleep')
         name = "SLEEP_" + dd + mm + yyyy + "_" + hr + min;
+    else if (tabPage === 'dyn')
+        name = "DYN_" + dd + mm + yyyy + "_" + hr + min;
 
     dirEntry.getFile(name + ".csv", { create: true, exclusive: false }, function (fileEntry) {
         writeCSV(fileEntry, null);
@@ -146,6 +173,8 @@ function writeCSV(fileEntry, dataObj) {
                 dataObj = new Blob([csvOutput], { type: 'text/plain' });
             else if (tabPage === 'sleep')
                 dataObj = new Blob([sleepCSV], { type: 'text/plain' });
+            else if (tabPage === 'dyn')
+                dataObj = new Blob([dynCSV], { type: 'text/plain' });
         }
 
         fileWriter.write(dataObj);

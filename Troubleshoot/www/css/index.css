@@ -48,12 +48,12 @@
     background-repeat: no-repeat;*/
 }
 
-/*HOME PAGE*/
+/************************************************** HOME PAGE ***************************************************/
 .home-img {
     width: 100%;
 }
 
-#home-btn-temp, #home-btn-music {
+#home-btn-temp, #home-btn-music, #home-btn-dyn, #home-btn-empty {
     width: 30%;
     margin: 5%;
 }
@@ -67,7 +67,7 @@
     opacity: 0.5;
 }
 
-/*TEMP PAGE*/
+/************************************************** TEMP PAGE ***************************************************/
 #current-temp {
     font-size: 40px;
     margin: 5%;
@@ -170,7 +170,7 @@
     padding: 15px 25px;
 }
 
-/* TABS */
+/************************************************** TABS **************************************************/
 .tab-btn-container {
     overflow: hidden;
     border: 1px solid #ccc;
@@ -198,13 +198,96 @@
     display: none;
 }
 #tab-btn {
-    width: 50%;
+    width: 33.333%;
     float: left;
 }
 
-/*SLEEP TAB*/
+/** SLEEP TAB **/
 .sleep-stat {
     /*width: 40%;
     float: left;*/
     margin: 20% 5% 5%;
+}
+
+/** MOVEMENT TAB **/
+#shoe-img {
+    width: 50%;
+    margin-left: 5%;
+    vertical-align: middle;
+}
+.dot {
+    width: 30%;
+    background-color: #3e6d8e;
+    border-radius: 50%;
+    display: inline-block;
+    text-align: center;
+    line-height: 10vw;
+    color: white;
+    margin-left: 5%;
+    height: 23vw;
+    vertical-align: middle;
+    padding-top: 7vw;
+}
+.l-rectangle {
+    border: 4px solid black;
+    margin: 50%;
+    padding: 10% 16% 24% 16%;
+    text-shadow: none;
+}
+.r-rectangle {
+    border: 4px solid black;
+    margin: 0;
+    padding: 10% 14% 24% 14%;
+    text-shadow: none;
+}
+#left-arm-num {
+    text-shadow: none;
+    margin: 63%;
+    padding: 6%;
+}
+#right-arm-num {
+    text-shadow: none;
+    margin: 13%;
+    padding: 6%;
+}
+.arm-mov-container {
+    width: 50%;
+}
+
+/************************************************** NOTIFICATIONS **************************************************/
+#posture-notif {
+    visibility: hidden; 
+    min-width: 250px;
+    margin-left: -135px;
+    background-color: #e0842f;
+    color: black;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    font-size: 17px;
+    text-shadow: none;
+}
+#posture-notif.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+@-webkit-keyframes fadein {
+    from { bottom: 0; opacity: 0; }
+    to { bottom: 30px; opacity: 1; }
+}
+@keyframes fadein {
+    from { bottom: 0; opacity: 0; }
+    to { bottom: 30px;  opacity: 1; }
+}
+@-webkit-keyframes fadeout {
+    from { bottom: 30px;  opacity: 1; }
+    to { bottom: 0; opacity: 0; }
+}
+@keyframes fadeout {
+    from { bottom: 30px; opacity: 1; }
+    to { bottom: 0; opacity: 0; }
 }

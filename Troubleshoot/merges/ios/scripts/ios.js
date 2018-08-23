@@ -1,1 +1,0 @@
-﻿//ios platform script

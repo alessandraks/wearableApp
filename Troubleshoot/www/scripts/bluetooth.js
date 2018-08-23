@@ -1,11 +1,11 @@
 ﻿var position = 0;
-var address = "C3:10:D9:17:33:61";//C3:10:D9:17:33:61 -- Address of old Nano device //F4:AE:03:E8:D6:35 -- Address of broken
+var address = "C3:10:D9:17:33:61"; //"C2:01:C6:67:1C:8F";// -- Address of Prototype2 //"C3:10:D9:17:33:61" -- Address of Prototype1 device //F4:AE:03:E8:D6:35 -- Address of broken
 var serviceUuid = "1815";//"713d0000-503e-4c75-ba94-3148f18d941e"; //Client - Generic Acess
 var characteristics = "2A57"; //Generic Access - Device Name
 var characteristicTemp = "2A59";
 var charAccel = "2A58";
 
-/******  MAIN MENU   ******/
+/*********************************************  MAIN MENU   *************************************************/
 function toTemp() {
     navigator.vibrate(2000);
     window.location.href = "temp.html";
@@ -16,10 +16,17 @@ function toMusic() {
     navigator.vibrate(2000);
     window.location.href = "music.html";
 }
+function toHome() {
+    bluetoothle.isConnected(connectCheck, handleError, { address: address });
+}
+function toDyn() {
+    navigator.vibrate(2000);
+    window.location.href = "dyn.html";
+}
 
-/******  TEMP PAGE   ******/
+/**********************************************  TEMP PAGE   ***************************************************/
 var chart, sleepLine;
-var currentTemp = 25;
+var currentTemp = 30;
 var modalOpen = false;
 var tempTime = 0;
 var minTemp, maxTemp, avgTemp;
@@ -101,7 +108,7 @@ function mediaError() {
     alert("error play");
 }
 
-/******  BLUETOOTH   ******/
+/*******************************************************  BLUETOOTH   ****************************************************/
 function bluetooth() {
 
     new Promise(function (resolve) {
@@ -256,7 +263,18 @@ function discoverSuccess(result) { /////////////////////Android Platform
     }
 }
 
-/**************************Read/Write************************/
+function connectCheck(result) {
+    if (result.isConnected) {
+        $("#footer-msg").text("Connected");
+        bleCt = 1;
+    }
+    else {
+        $("#footer-msg").text("Disconnected");
+        bleCt = 0;
+    }
+}
+
+/************************************************* Read/Write **************************************************/
 function readButton() {
     bluetoothle.read(readSuccessBtn, handleError, { address: address, service: serviceUuid, characteristic: characteristics });
 }
@@ -284,8 +302,19 @@ function readSuccessTemp(result) {
         var newTemp = bluetoothle.encodedStringToBytes(result.value);
         //alert(typeof currentTemp); //object
         newTemp = Number(newTemp);
-        //alert(newTemp);
-        if (newTemp !== 0 && Math.abs(newTemp - currentTemp) < 5) {
+
+        /*** Nonlinear ADC correction ***/
+        if (newTemp > 20) {
+            /*var lastDig = newTemp.toString().split('').pop();
+            var x = 1 + (lastDig * 0.01);
+            newTemp = Math.ceil(newTemp * x * x).toFixed(0);*/
+            if (lastPos === 2)
+                newTemp = newTemp + 3;
+            else if (lastPos != 0) //if laying down
+                newTemp = newTemp + 5;
+        }
+        
+        if (newTemp !== 0 && Math.abs(newTemp - currentTemp) < 10) {
             currentTemp = newTemp; //update temp if not zero
         }
         /*** check too hot / too cold ***/
@@ -319,131 +348,95 @@ var toLeft = 0;
 var frontFlag = 0;
 var rightFlag = 0;
 var posChange = 0;
-var sleepHr, sleepMin;
+var sleepHr = 0;
+var sleepMin = 0;
 var rssiFront, rssiCurr;
+var leftArm, rightArm, newAccelX, newAccelY, newAccelZ;
 function readSuccessAccel(result) {
     if (result.status === "read") {
         var newAccel = bluetoothle.encodedStringToBytes(result.value);
         //alert(newAccel);
-        var newAccelX = String(newAccel).substr(0, String(newAccel).indexOf(','));
-        var newAccelY = String(newAccel).substr(String(newAccel).indexOf(',') + 1, String(newAccel).lastIndexOf(',') - String(newAccel).indexOf(',') - 1);
-        var newAccelZ = String(newAccel).substr(String(newAccel).lastIndexOf(',') + 1);
-        //alert("X: " + newAccelX + "\nY: " + newAccelY + "\nZ: " + newAccelZ);
 
-        //compare < or > . if 4/5 values are >, and on back/front, turning to left. if ... . 
+        var indices = [];
+
+        for (var idx = 0; idx < String(newAccel).length; idx++) {
+            if (String(newAccel)[idx] === ",")
+                indices.push(idx);
+        }
+        
+        newAccelX = String(newAccel).split(",").shift();
+        newAccelY = String(newAccel).substr(indices[0] + 1, indices[1] - indices[0] - 1);
+        newAccelZ = String(newAccel).substr(indices[1] + 1, indices[2] - indices[1] - 1);
+        leftArm = Number(String(newAccel).substr(indices[2] + 1, indices[3] - indices[2] - 1));
+        rightArm = Number(String(newAccel).substr(String(newAccel).lastIndexOf(',') + 1));
+
+        //alert(newAccel + "\nLeft: " + leftArm + " and Right: " + rightArm);
+        //rightArm = String(newAccel).substr(indices[4] + 1, indices[5] - indices[4] - 1);
+
+        countSteps();
+        armMovement();
+
+        //var newAccelX = String(newAccel).substr(0, String(newAccel).indexOf(','));
+        //var newAccelY = String(newAccel).substr(String(newAccel).indexOf(',') + 1, String(newAccel).lastIndexOf(',') - String(newAccel).indexOf(',') - 1);
+        //var newAccelZ = String(newAccel).substr(String(newAccel).lastIndexOf(',') + 1);
+        //alert("X: " + newAccelX + "\nY: " + newAccelY + "\nZ: " + newAccelZ + "\n " + fourth + "\n " + fifth + "\n " + sixth);
 
         //shift array values and take average
-        for (var i = 5; i > 0; i--) {
+        /*for (var i = 3; i > 0; i--) {
             accelX[i] = accelX[i - 1];
             accelY[i] = accelY[i - 1];
             accelZ[i] = accelZ[i - 1];
         }
         accelX[0] = Number(newAccelX); 
         accelY[0] = Number(newAccelY); 
-        accelZ[0] = Number(newAccelZ); 
+        accelZ[0] = Number(newAccelZ); */
         
         if (tempTime > 2) { //array full of new values
-            /*avgX = accelX.reduce((a, b) => a + b, 0) / accelX.length;
+           /* avgX = accelX.reduce((a, b) => a + b, 0) / accelX.length;
             avgY = accelY.reduce((a, b) => a + b, 0) / accelY.length;
             avgZ = accelZ.reduce((a, b) => a + b, 0) / accelZ.length;*/
 
-            /*if (avgZ > 190) 
-                frontFlag = 1;*/
-
-            //notes: need to check if changing position, then perform checks
-
-            //testing
-           /* for (var j = 4; j > 0; j--) {
-                if (accelZ[j] > 200)
-                    frontFlag = 1;
-                else if (accelX[j] > 200)
-                    rightFlag = 1;
-            }*/
-
-            /*if (lastPos === 1 || lastPos === 2) { //changing position from back/front to left/right
-                for (var j = 5; j > 0; j--) { //check last 5 values and check if increasing or decreasing
-                    if (Math.abs(accelX[3] - accelX[j - 1]) > 20 && Math.abs(accelX[3] - accelX[j - 1]) < 200) { //don't count the edge values
-                        if (accelX[0] > accelX[j]) { //increasing from back/front to left
-                            toLeft++;
-                        }
-                        else { //decreasing from back/front to right
-                            toLeft--;
-                        }
-                        posChange = 1;
-                    }
-                }
-                if (posChange) {
-                    //alert(toLeft);
-                    if (toLeft > 0) { //left
-                        rightFlag = 0;
-                    }
-                    else { //right
-                        rightFlag = 1;
-                    }
-                    toLeft = 0;
-                    posChange = 0;
-                }
-            }*/
-           /* else if (lastPos === 3 || lastPos === 4) { //changing position from left/right to back/front
-                for (var j = 5; j > 0; j--) { //check last 5 values and check if increasing or decreasing
-                    if (Math.abs(accelZ[3] - accelZ[j - 1]) > 20 && Math.abs(accelZ[3] - accelZ[j - 1]) < 200) { //don't count the edge values
-                        if (accelZ[0] > accelZ[j]) { //increasing from back/front to left
-                            toFront++;
-                        }
-                        else { //decreasing from back/front to right
-                            toFront--;
-                        }
-                        posChange = 1;
-                    }
-                }
-                if (posChange) {
-                    if (toFront > 0) { //front
-                        frontFlag = 1;
-                    }
-                    else { //back
-                        frontFlag = 0;
-                    }
-                    toFront = 0;
-                    posChange = 0;
-                }
-            }*/
-
             //Start sleep
-            if (newAccelY < 70) //batt-test: newAccelY > 20
+            if (newAccelX > 170 || newAccelX < 144) //batt-test: newAccelY > 20
                 sleeping = 1;
             //Tally up positions
             if (sleeping) { 
                 
                 /*batt-test:  if (rssiInitial) { //read RSSI value for front
                     getRSSI();
-                }
-                getRSSI();*/
+                }*/
+                //getRSSI();
 
                 totalSleep++;
-                
-                if (newAccelY < 20) { // STANDING (0) //batt-test: newAccelY < 20
-                    lastPos = 0;
+
+                if (newAccelX > 144 && newAccelX < 170) { // STANDING
+                    lastPos = 0; 
                     sleeping = 0;
+                    //alert(newAccelX);
                 }
-                else if (newAccelZ > 144 && newAccelZ < 170) { //front
+                else if (newAccelZ > 224 && newAccelZ < 256 && newAccelY > 175 && newAccelY < 220) { // FRONT
                     sleepDuration++;
                     sleepCount[2]++;
                     lastPos = 2;
+                   // alert(newAccelZ);
                 }
-                else if (newAccelZ > 176 && newAccelZ < 223) { //back
+                else if (newAccelZ > 150 && newAccelZ < 210 && newAccelY > 175 && newAccelY < 220) { // BACK
                     sleepDuration++;
                     sleepCount[1]++;
                     lastPos = 1;
+                    //alert(newAccelZ);
                 }
-                else if (newAccelX > 128 && newAccelX < 175) { //left
+                else if (newAccelY > 220 && newAccelY < 256) { // LEFT
                     sleepDuration++;
                     sleepCount[4]++;
                     lastPos = 4;
+                    //alert(newAccelY);
                 }
-                else if (newAccelX > 176 && newAccelX < 208) { //right
+                else if (newAccelY > 144 && newAccelY < 175) { // RIGHT
                     sleepDuration++;
                     sleepCount[3]++;
                     lastPos = 3;
+                    //alert(newAccelY);
                 }
                 else {
                     //sleepCount[sleepPos]++;
@@ -485,13 +478,20 @@ function readSuccess(result) {
     }
 }
 
-/**************************Report************************/
+/************************************************** REPORTS ******************************************************/
 function openPanel() {
-    $("#mypanel").show();
+    if (tabPage === "temp")
+        $("#mypanel").show();
+    else if (tabPage === "sleep")
+        $("#sleep-panel").show();
+    else if (tabPage === "dyn")
+        $("#dyn-panel").show();
 }
 function report() {
     //Close Panel
-    $("#mypanel").hide();
+    //$("#mypanel").hide();
+    //var x = document.getElementById("mypanel");
+    //x.className = "ui-panel-closed";
 
     var path = window.location.pathname;
     var page = path.split("/").pop();
@@ -547,12 +547,33 @@ function sleepReport() {
         }, 500);
     }
 }
+function dynReport() {
+    var modal = document.getElementById('modalDyn');
+    if (modalOpen) {
+        modal.style.display = "none";
+        setTimeout(function () {
+            modalOpen = false;
+        }, 500);
+    }
+    else if (!modalOpen) {
+        modal.style.display = "block";
+        $("#dynReport-steps").text(steps.toFixed(0));
+        $("#dynReport-leftarm").text(finalLeftArm.toFixed(0) + "%");
+        $("#dynReport-rightarm").text(finalRightArm.toFixed(0) + "%");
+
+        setTimeout(function () {
+            modalOpen = true;
+        }, 500);
+    }
+}
 function closeModal(page) {
     var modal;
     if(page === 'temp')
         modal = document.getElementById('modalTemp');
     else if (page === 'sleep')
         modal = document.getElementById('modalSleep');
+    else if (page === 'dyn')
+        modal = document.getElementById('modalDyn');
     modal.style.display = "none";
     modalOpen = false;
     //$("#mypanel").show();
@@ -677,7 +698,7 @@ var chart = new CanvasJS.Chart("chartContainer", {
 chart.render();
 */
 
-/*************************************************  General  **************************************************/
+/*************************************************  GENERAL  **************************************************/
 /***** Tabs*****/
 var tabPage = 'temp';
 function changeTab(evt, tabName) {
@@ -697,6 +718,8 @@ function changeTab(evt, tabName) {
         tabPage = 'sleep';
     else if (tabName === "temp-tab")
         tabPage = 'temp';
+    else if (tabName === "dyn-tab")
+        tabPage = 'dyn';
 }
 
 function defaultTab(evt, tabName) {
@@ -708,7 +731,7 @@ function defaultTab(evt, tabName) {
 
 
 
-/*RSSI testing*/
+/************************************************* RSSI *************************************************/
 function getRSSI() {
     bluetoothle.rssi(rssiSuccess, rssiError, { address: address });
 }
@@ -750,4 +773,57 @@ function rssiSuccess(result) {
 }
 function rssiError() {
     console.log("rssi error");
+}
+
+
+
+/*************************************************  POSTURE  **************************************************/
+function postureNotif() {
+    var x = document.getElementById("posture-notif");
+    x.className = "show";
+    setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
+}
+function closeNotif() {
+    var x = document.getElementById("posture-notif");
+    x.className = "hide";
+}
+
+/**********************************************  DYNAMICS PAGE  ************************************************/
+var prevX = Number(newAccelX);
+var prevY = Number(newAccelY);
+var prevZ = Number(newAccelZ);
+var stepCt = 0;
+var steps = 0;
+function countSteps() {
+    if (Math.abs(Number(newAccelX) - prevX) > 1 || Math.abs(Number(newAccelY) - prevY) > 1 || Math.abs(Number(newAccelZ) - prevZ) > 1) {
+        stepCt++;
+        steps = stepCt / 2;
+    }
+
+    $("#numSteps").text("Steps:" + steps.toFixed(0));
+
+    prevX = Number(newAccelX);
+    prevY = Number(newAccelY);
+    prevZ = Number(newAccelZ);
+}
+var leftArmCtr = 0;
+var rightArmCtr = 0;
+var armCtr = 0;
+var finalLeftArm = 0;
+var finalRightArm = 0;
+function armMovement() {
+    //threshold, calc percentage, update
+    if (leftArm > 20)
+        leftArmCtr++;
+    if (rightArm > 20)
+        rightArmCtr++;
+    armCtr++;
+
+    if (leftArmCtr / armCtr * 100 > 0) 
+        finalLeftArm = leftArmCtr / armCtr * 100;
+    if (rightArmCtr / armCtr * 100 > 0)
+        finalRightArm = rightArmCtr / armCtr * 100;
+
+    $("#left-arm-num").text(finalLeftArm.toFixed(0) + "%");
+    $("#right-arm-num").text(finalRightArm.toFixed(0) + "%");
 }
