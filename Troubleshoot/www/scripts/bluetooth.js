@@ -1,4 +1,4 @@
-﻿var position = 0;
+﻿﻿var position = 0;
 var address = "C3:10:D9:17:33:61"; //"C2:01:C6:67:1C:8F";// -- Address of Prototype2 //"C3:10:D9:17:33:61" -- Address of Prototype1 device //F4:AE:03:E8:D6:35 -- Address of broken
 var serviceUuid = "1815";//"713d0000-503e-4c75-ba94-3148f18d941e"; //Client - Generic Acess
 var characteristics = "2A57"; //Generic Access - Device Name
@@ -524,7 +524,6 @@ function report() {
             }, 500);  
         }
     }
-    //$("#mypanel").show();
 }
 function sleepReport() {
     var modal = document.getElementById('modalSleep');
@@ -576,7 +575,8 @@ function closeModal(page) {
         modal = document.getElementById('modalDyn');
     modal.style.display = "none";
     modalOpen = false;
-    //$("#mypanel").show();
+    if(page === 'temp')
+        openPanel();
 }
 
 function bluetoothSeq() {
