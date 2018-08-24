@@ -38,7 +38,7 @@ float voltage;
 uint16_t celsius;
 static uint8_t rx_buf[1] = {'a'};
 static uint8_t tempArray[1] = {0}; //{'0','0'};
-static uint8_t accelArray[3] = {0,0,0}; //{'0','0'};
+static uint8_t accelArray[6] = {0,0,0,0,0,0}; //{'0','0'};
 
 // The uuid of service and characteristics
 static const uint8_t service1_uuid[]        = {0x71, 0x3D, 0, 0, 0x50, 0x3E, 0x4C, 0x75, 0xBA, 0x94, 0x31, 0x48, 0xF1, 0x8D, 0x94, 0x1E};
