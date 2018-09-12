@@ -271,7 +271,25 @@ function connectCheck(result) {
     else {
         $("#footer-msg").text("Disconnected");
         bleCt = 0;
+        reconnectBLE();
     }
+}
+
+function reconnectBLE() {
+    bluetoothle.reconnect(reconnectSuccess, reconnectError, { address: address });
+}
+function reconnectSuccess(result) {
+    if (result.status === "connected") {
+        //alert("success - reconnected");
+        bleCt = 1;
+    }
+    else {
+        //alert("not connected...");
+        bleCt = 0;
+    }
+}
+function reconnectError() {
+    //alert("Reconnect error");
 }
 
 /************************************************* Read/Write **************************************************/
@@ -298,7 +316,7 @@ function readSuccessBtn(result) {
     }
 }
 function readSuccessTemp(result) {
-    if (result.status === "read") {
+    if (result.status === "read" && bleCt === 1) {
         var newTemp = bluetoothle.encodedStringToBytes(result.value);
         //alert(typeof currentTemp); //object
         newTemp = Number(newTemp);
@@ -353,7 +371,7 @@ var sleepMin = 0;
 var rssiFront, rssiCurr;
 var leftArm, rightArm, newAccelX, newAccelY, newAccelZ;
 function readSuccessAccel(result) {
-    if (result.status === "read") {
+    if (result.status === "read" && bleCt === 1) {
         var newAccel = bluetoothle.encodedStringToBytes(result.value);
         //alert(newAccel);
 
@@ -382,16 +400,18 @@ function readSuccessAccel(result) {
         //alert("X: " + newAccelX + "\nY: " + newAccelY + "\nZ: " + newAccelZ + "\n " + fourth + "\n " + fifth + "\n " + sixth);
 
         //shift array values and take average
-        /*for (var i = 3; i > 0; i--) {
+        for (var i = 3; i > 0; i--) {
             accelX[i] = accelX[i - 1];
             accelY[i] = accelY[i - 1];
             accelZ[i] = accelZ[i - 1];
         }
         accelX[0] = Number(newAccelX); 
         accelY[0] = Number(newAccelY); 
-        accelZ[0] = Number(newAccelZ); */
+        accelZ[0] = Number(newAccelZ); 
         
         if (tempTime > 2) { //array full of new values
+            //alert("X: " + newAccelX + " Y: " + newAccelY + " Z: " + newAccelZ);
+            //alert(newAccel);
            /* avgX = accelX.reduce((a, b) => a + b, 0) / accelX.length;
             avgY = accelY.reduce((a, b) => a + b, 0) / accelY.length;
             avgZ = accelZ.reduce((a, b) => a + b, 0) / accelZ.length;*/

@@ -47,7 +47,10 @@
         window.setInterval(function () {
             //getRSSI();
             readAccel();
-        }, 200); //every 0.5 seconds
+
+            bluetoothle.isConnected(connectCheck, handleError, { address: address });
+
+        }, 200); //every 0.2 seconds
     };
 
     function onPause() {
